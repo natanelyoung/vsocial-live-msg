@@ -1,119 +1,117 @@
 <template>
-  <div class="home"><div class="popup-wrap show">
-    <div class="popup">
-    <h3 class="pop-head">Messages Info</h3>
-    <input
-        placeholder="Amount"
-        type="number"
-        class="field"
-     />
-    <input
-        placeholder="Name"
-        type="text"
-        class="field"
-     /><textarea class="field"></textarea><div class="popup-btns-wrap"><a
-    href=""
-    class="popup-btn"
->Approve Add to Queue</a>
-    <a
-        href=""
-        class="popup-btn remove"
-    >Remove from Queue</a>
-    <a
-        href=""
-        class="cancel"
-    >Cancel</a></div></div></div>
-  <div class="main-box"><div class="side-wrap">
-    <div class="head-wrap"><h1 class="head">Incoming messages</h1></div>
-    <div class="Incoming-msg-wrap"><msg></msg><msg></msg><msg></msg><msg></msg><msg></msg></div></div>
-    <div class="queue-wrap"><h2 class="head">Message Queue</h2><a
-                                       href=""
-                                       class="new-msg-btn"
-                                   >New Custom Message<br /></a>
-    <div class="queue-list-wrap"><div class="queue-item"><div class="dot-wrap"><img
-    src="../assets/dots.svg"
-    height=""
-    width=""
-    class="dots"
- /></div>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Jon Moe<br /></p>
-    <p class="msg-txt">Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem&nbsp;</p></div><div class="queue-item"><div class="dot-wrap"><img
-    src="../assets/dots.svg"
-    height=""
-    width=""
-    class="dots"
- /></div>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Jon Moe<br /></p>
-    <p class="msg-txt">Lorem ipsum dolor sit amet</p></div><div class="queue-item"><div class="dot-wrap"><img
-    src="../assets/dots.svg"
-    height=""
-    width=""
-    class="dots"
- /></div>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Jon Moe<br /></p>
-    <p class="msg-txt">Lorem ipsum dolor sit amet</p></div><div class="queue-item"><div class="dot-wrap"><img
-    src="../assets/dots.svg"
-    height=""
-    width=""
-    class="dots"
- /></div>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Jon Moe<br /></p>
-    <p class="msg-txt">Lorem ipsum dolor sit amet</p></div><div class="queue-item"><div class="dot-wrap"><img
-    src="../assets/dots.svg"
-    height=""
-    width=""
-    class="dots"
- /></div>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Jon Moe<br /></p>
-    <p class="msg-txt">Lorem ipsum dolor sit amet</p></div><div class="queue-item"><div class="dot-wrap"><img
-    src="../assets/dots.svg"
-    height=""
-    width=""
-    class="dots"
- /></div>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Jon Moe<br /></p>
-    <p class="msg-txt">Lorem ipsum dolor sit amet</p></div><div class="queue-item"><div class="dot-wrap"><img
-    src="../assets/dots.svg"
-    height=""
-    width=""
-    class="dots"
- /></div>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Jon Moe<br /></p>
-    <p class="msg-txt">Lorem ipsum dolor sit amet</p></div></div></div></div>
+  <div class="home">
+    <message-popup v-model="popupMessage" />
+    <div class="main-box">
+      <div class="side-wrap">
+        <div class="head-wrap"><h1 class="head">Incoming messages</h1></div>
+        <div class="Incoming-msg-wrap">
+          <msg
+            v-for="donation of allDonations"
+            :key="donation._id"
+            :donation="donation"
+            @click="popupMessage = donation"
+          />
+        </div>
+      </div>
+      <div class="queue-wrap">
+        <h2 class="head">Message Queue</h2>
+        <a @click="newMessage()" class="new-msg-btn"
+          >New Custom Message<br
+        /></a>
+        <div class="queue-list-wrap">
+          <draggable v-model="messageQueue">
+            <queue-item
+              v-for="message of messageQueue"
+              :key="message.name"
+              :message="message"
+              @dblclick="popupMessage = message"
+            />
+          </draggable>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import msg from '@/components/msg.vue';
+import draggable from "vuedraggable";
+import msg from "@/components/msg.vue";
+import MessagePopup from "@/components/messagePopup.vue";
+import QueueItem from "@/components/QueueItem.vue";
+import Bagel from "@bageldb/bagel-db";
+let db = new Bagel(process.env.VUE_APP_BAGEL_TOKEN);
 export default {
-    components: {
-        msg
+  components: {
+    msg,
+    MessagePopup,
+    QueueItem,
+    draggable,
+  },
+  name: "Home",
+  data() {
+    return {
+      allDonations: [],
+      messageQueue: [],
+      popupMessage: {},
+    };
+  },
+  async mounted() {
+    let { data: messageQueue } = await db.collection("messageQueue").get();
+    this.messageQueue = messageQueue;
+    db.collection("messageQueue").listen(
+      (message) => {
+        let { item, trigger, itemID } = JSON.parse(message.data);
+        if (trigger == "update") {
+          let idx = this.messageQueue.findIndex((i) => i._id == itemID)
+          this.messageQueue.splice(idx,1,item)
+          }
+        if (trigger == "delete")
+          this.messageQueue = this.messageQueue.filter((i) => i._id != itemID);
+        if (trigger == "create") this.messageQueue.push(item);
+      },
+      (err) => console.log(err)
+    );
+
+    let { data: donation } = await db.collection("donations").get();
+    this.allDonations = donation;
+        db.collection("donations").listen(
+      (message) => {
+        let { item, trigger, itemID } = JSON.parse(message.data);
+        console.log(itemID);
+        console.log(this.messageQueue);
+        if (trigger == "delete")
+          this.allDonations = this.allDonations.filter((i) => i._id != itemID);
+        if (trigger == "create") this.allDonations.push(item);
+        if (trigger == "update") {
+          let idx = this.allDonations.findIndex((i) => i._id == itemID)
+          this.allDonations.splice(idx,1,item)
+          }
+      },
+      (err) => console.log(err)
+    );
+  },
+  methods: {
+    addNewMessage(event) {
+      this.messageQueue.push(event);
     },
-    name: 'Home'
+    newMessage() {
+      this.popupMessage = null;
+      this.popupMessage = {
+        newMessage: true,
+      };
+    },
+  },
 };
 </script>
 
-        <style scoped="">.home {
-  background: #F6F7F9;
+<style scoped="">
+.home {
+  background: #f6f7f9;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
 .main-box {
@@ -130,10 +128,10 @@ export default {
 }
 
 .side-wrap {
-  background: #FBFCFC;
+  background: #fbfcfc;
   width: 340px;
   flex-shrink: 0;
-  border-right: 1px solid #F2F2F2;
+  border-right: 1px solid #f2f2f2;
 }
 
 .queue-wrap {
@@ -158,11 +156,11 @@ export default {
 
 .incoming-msg {
   padding: 15px 30px 20px 30px;
-  border-top: 1px solid #F0F0F0;
+  border-top: 1px solid #f0f0f0;
 }
 
 .queued {
-  color: #2E5BFF;
+  color: #2e5bff;
   font-size: 14px;
   line-height: 1;
   margin: 0;
@@ -172,7 +170,7 @@ export default {
   position: absolute;
   top: 30px;
   right: 40px;
-  background: #2E5BFF;
+  background: #2e5bff;
   color: white;
   border-radius: 30px;
   text-decoration: none;
@@ -199,136 +197,8 @@ export default {
   margin-bottom: 3px;
 }
 
-.dot-wrap {
-  width: 40px;
-  height: 100%;
-  text-align: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-}
-
-.dot-wrap:active {
-  cursor: grabbing;
-}
-
-.queue-item {
-  border-radius: 10px;
-  background: #F6F7F9;
-  padding: 23px 23px 23px 40px;
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.dots {
-  width: 4px;
-}
-
-.amount {
-  display: inline-block;
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
-}
-
-.name {
-  display: inline-block;
-  font-size: 20px;
-  margin: 0;
-}
-
-.before-name {
-  height: 14px;
-  background: black;
-  width: 2px;
-  display: inline-block;
-  margin: 0 8px;
-}
-
-.msg-txt {
-  font-size: 16px;
-  line-height: 1.6;
-  margin: 6px 0 0 0;
-}
-
 .queue-item:hover {
   filter: brightness(95%);
   cursor: pointer;
 }
-
-.popup-wrap {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 9;
-  align-items: center;
-  justify-content: center;
-  background: #00000020;
-  opacity: 0;
-  display: none ;
-  transition: 200ms ease all;
-}
-
-.popup {
-  background: white;
-  padding: 40px 50px;
-  border-radius: 10px;
-  box-shadow: 0 0 30px #00000020;
-}
-
-.field {
-  display: block;
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  border: 1px solid #DCDDDF;
-  font-size: 16px;
-  min-width: 400px;
-  width: 100%;
-}
-
-.pop-head {
-  margin: 0 0 20px 0;
-}
-
-.cancel {
-  float: right;
-  color: black;
-  margin-top: 8px;
-  margin-left: 20px;
-}
-
-.popup-btns-wrap {
-  margin-top: 20px;
-  font-size: 14px;
-}
-
-.popup-btn {
-  text-align: center;
-  text-decoration: none;
-  border-radius: 30px;
-  padding: 9px 15px;
-  color: white;
-  background: #2E5BFF;
-  transform: all ease 200ms;
-}
-
-.popup-btn.remove {
-  background: #CA3A3A;
-  margin-left: 20px;
-}
-
-.popup-btn:hover {
-  filter: brightness(90%);
-}
-
-.popup-wrap.show {
-  display: flex ;
-  opacity: 1;
-}</style>
+</style>

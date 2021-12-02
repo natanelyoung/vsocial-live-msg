@@ -1,17 +1,33 @@
 <template>
-      <div class="incoming-msg"><p class="queued">Queued</p>
-    <p class="amount">$100</p>
-    <div class="before-name"></div>
-    <p class="name">Nati</p><p class="msg-txt">Lorem ipsum dolor sit dkj doifv okdfjvk ndfskv ndsfv ikndfkvj ndfvjk dfnjkvnd fvkjndf vkjdnfjkv&nbsp;</p></div>
-      </template>
-      <script>
-      export default {
-          props: [],
-          name: "msg"
-      };
-      </script>
-        <style scoped="">.queued {
-  color: #2E5BFF;
+  <div class="incoming-msg" @click="emitClick">
+    <p v-if="donation.approved" class="queued">Approved</p>
+    <p v-if="donation.amount" class="amount">
+      ${{ donation.amount.toLocaleString() }}
+    </p>
+    <div class="before-name" v-if="donation.message && donation.amount"></div>
+    <p class="name">{{ donation.message }}</p>
+    <p class="msg-txt">
+      {{ donation.name }}
+    </p>
+  </div>
+</template>
+
+<script>
+
+export default {
+  props: { donation: Object },
+  name: "msg",
+  methods:{
+    emitClick(){
+      this.$emit("click")
+    }
+  },
+};
+</script>
+
+<style scoped="">
+.queued {
+  color: #2e5bff;
   margin: 0 0 10px 0;
 }
 
@@ -43,9 +59,11 @@
 }
 
 .incoming-msg:hover {
-  filter: brightness(90%);
+  filter: brightness(80%);
 }
 
 .incoming-msg {
+  cursor: pointer;
   transition: all ease 200ms;
-}</style>
+}
+</style>
