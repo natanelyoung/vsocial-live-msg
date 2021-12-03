@@ -3,7 +3,7 @@
     <message-popup v-model="popupMessage" />
     <div class="main-box">
       <div class="side-wrap">
-        <div class="head-wrap"><h1 class="head">Incoming messages</h1></div>
+        <div class="head-wrap"><h1 class="head">Donations</h1></div>
         <div class="Incoming-msg-wrap">
           <msg
             v-for="donation of allDonations"
@@ -15,14 +15,19 @@
       </div>
       <div class="queue-wrap">
         <h2 class="head">Message Queue</h2>
+        <button class="playpause" @click="playPause()"> {{pause?'▸':'||'}}</button>
         <a @click="newMessage()" class="new-msg-btn"
           >New Custom Message<br
         /></a>
+        
         <div class="queue-list-wrap">
           <draggable v-model="messageQueue">
             <queue-item
-              v-for="message of messageQueue"
-              :key="message.name"
+              v-for="(message, i) of messageQueue"
+              :key="i"
+              :idx="i"
+              :newMessageCounter="newMessageCounter"
+              :messageInterval="messageInterval"
               :message="message"
               @dblclick="popupMessage = message"
             />
@@ -53,6 +58,9 @@ export default {
       allDonations: [],
       messageQueue: [],
       popupMessage: {},
+      newMessageCounter: 0,
+      messageInterval: 30,
+      pause: true,
     };
   },
   async mounted() {
@@ -62,9 +70,9 @@ export default {
       (message) => {
         let { item, trigger, itemID } = JSON.parse(message.data);
         if (trigger == "update") {
-          let idx = this.messageQueue.findIndex((i) => i._id == itemID)
-          this.messageQueue.splice(idx,1,item)
-          }
+          let idx = this.messageQueue.findIndex((i) => i._id == itemID);
+          this.messageQueue.splice(idx, 1, item);
+        }
         if (trigger == "delete")
           this.messageQueue = this.messageQueue.filter((i) => i._id != itemID);
         if (trigger == "create") this.messageQueue.push(item);
@@ -74,7 +82,7 @@ export default {
 
     let { data: donation } = await db.collection("donations").get();
     this.allDonations = donation;
-        db.collection("donations").listen(
+    db.collection("donations").listen(
       (message) => {
         let { item, trigger, itemID } = JSON.parse(message.data);
         console.log(itemID);
@@ -83,14 +91,29 @@ export default {
           this.allDonations = this.allDonations.filter((i) => i._id != itemID);
         if (trigger == "create") this.allDonations.push(item);
         if (trigger == "update") {
-          let idx = this.allDonations.findIndex((i) => i._id == itemID)
-          this.allDonations.splice(idx,1,item)
-          }
+          let idx = this.allDonations.findIndex((i) => i._id == itemID);
+          this.allDonations.splice(idx, 1, item);
+        }
       },
       (err) => console.log(err)
     );
   },
   methods: {
+    playPause(){
+      this.pause=!this.pause
+      if (!this.pause) this.sendNewMessage()
+    },
+    sendNewMessage() {
+      let addSeconds = () => {
+        this.newMessageCounter++;
+        if (this.newMessageCounter >= this.messageInterval) {
+          this.newMessageCounter = 0;
+          this.sendNewMessage();
+        }
+        if (!this.pause) setTimeout(() => addSeconds(), 1000);
+      };
+      addSeconds();
+    },
     addNewMessage(event) {
       this.messageQueue.push(event);
     },
@@ -105,6 +128,16 @@ export default {
 </script>
 
 <style scoped="">
+.playpause{
+    position: absolute;
+    top: 33px;
+    right: 251px;
+    background: #2e5bff;
+    color: white;
+    border-radius: 100px;
+    height: 32px;
+    width: 32px;
+}
 .home {
   background: #f6f7f9;
   min-height: 100vh;
