@@ -1,5 +1,8 @@
 <template>
   <div class="home">
+    <div class="total-amount">
+      Total amount of all donations: <span>$100000</span>
+    </div>
     <message-popup v-model="popupMessage" />
     <div class="main-box">
       <div class="side-wrap">
@@ -15,11 +18,13 @@
       </div>
       <div class="queue-wrap">
         <h2 class="head">Message Queue</h2>
-        <button class="playpause" @click="playPause()"> {{pause?'▸':'||'}}</button>
+        <button class="playpause" @click="playPause()">
+          {{ pause ? "▸" : "||" }}
+        </button>
         <a @click="newMessage()" class="new-msg-btn"
           >New Custom Message<br
         /></a>
-        
+
         <div class="queue-list-wrap">
           <draggable v-model="messageQueue">
             <queue-item
@@ -99,9 +104,9 @@ export default {
     );
   },
   methods: {
-    playPause(){
-      this.pause=!this.pause
-      if (!this.pause) this.sendNewMessage()
+    playPause() {
+      this.pause = !this.pause;
+      if (!this.pause) this.sendNewMessage();
     },
     sendNewMessage() {
       let addSeconds = () => {
@@ -128,15 +133,23 @@ export default {
 </script>
 
 <style scoped="">
-.playpause{
-    position: absolute;
-    top: 33px;
-    right: 251px;
-    background: #2e5bff;
-    color: white;
-    border-radius: 100px;
-    height: 32px;
-    width: 32px;
+.total-amount {
+  position: absolute;
+  bottom: 4vw;
+  font-size: 20px;
+}
+.total-amount span {
+  font-weight: 600;
+}
+.playpause {
+  position: absolute;
+  top: 33px;
+  right: 251px;
+  background: #2e5bff;
+  color: white;
+  border-radius: 100px;
+  height: 32px;
+  width: 32px;
 }
 .home {
   background: #f6f7f9;
@@ -157,7 +170,7 @@ export default {
   overflow: hidden;
   display: flex;
   align-items: stretch;
-  height: 90vh;
+  height: 80vh;
 }
 
 .side-wrap {
