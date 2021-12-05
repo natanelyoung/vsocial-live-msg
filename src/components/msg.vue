@@ -1,6 +1,7 @@
 <template>
   <div class="incoming-msg" @click="emitClick">
     <p v-if="donation.approved" class="queued">Approved</p>
+    {{ donation.source }}
     <p v-if="donation.amount" class="amount">
       ${{ donation.amount.toLocaleString() }}
     </p>
