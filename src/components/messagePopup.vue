@@ -102,7 +102,9 @@ export default {
     value: {
       deep: true,
       handler(val) {
-        this.content = Object.assign({}, val);
+        var contnet = Object.assign({}, val);
+        if (contnet.anonymous == true) contnet.name = "Anonymous";
+        this.content = contnet;
         this.show = true;
       },
     },

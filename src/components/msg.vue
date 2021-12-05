@@ -7,20 +7,19 @@
     <div class="before-name" v-if="donation.message && donation.amount"></div>
     <p class="name">{{ donation.message }}</p>
     <p class="msg-txt">
-      {{ donation.name }}
+      {{ donation.anonymous == true ? "Anonymous" : donation.name }}
     </p>
   </div>
 </template>
 
 <script>
-
 export default {
   props: { donation: Object },
   name: "msg",
-  methods:{
-    emitClick(){
-      this.$emit("click")
-    }
+  methods: {
+    emitClick() {
+      this.$emit("click");
+    },
   },
 };
 </script>
