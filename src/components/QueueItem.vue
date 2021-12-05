@@ -11,12 +11,12 @@
     <p class="msg-txt">
       {{ message.message }}
     </p>
-    <div v-if="idx == 0" class="progress-wrapper">
+    <!-- <div v-if="idx == 0" class="progress-wrapper">
       <div
         class="progress"
         :style="{ width: (newMessageCounter / messageInterval) * 100 + '%' }"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 

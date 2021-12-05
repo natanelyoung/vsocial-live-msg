@@ -18,18 +18,18 @@
       </div>
       <div class="queue-wrap">
         <h2 class="head">Message Queue</h2>
-        <button class="playpause" @click="playPause()">
-          {{ pause ? "▸" : "||" }}
+        <button class="playpause" @click="playPause(!queueSettings.playing)">
+          {{ queueSettings.playing ? "||" : "▸" }}
         </button>
         <a @click="newMessage()" class="new-msg-btn"
           >New Custom Message<br
         /></a>
 
         <div class="queue-list-wrap">
-          <draggable v-model="messageQueue">
+          <draggable v-model="messageQueue" @sort="sort">
             <queue-item
               v-for="(message, i) of messageQueue"
-              :key="i"
+              :key="message._id"
               :idx="i"
               :newMessageCounter="newMessageCounter"
               :messageInterval="messageInterval"
@@ -66,10 +66,14 @@ export default {
       newMessageCounter: 0,
       messageInterval: 30,
       pause: true,
+      queueSettings: {},
     };
   },
   async mounted() {
-    let { data: messageQueue } = await db.collection("messageQueue").get();
+    let { data: messageQueue } = await db
+      .collection("messageQueue")
+      .sort("order")
+      .get();
     this.messageQueue = messageQueue;
     db.collection("messageQueue").listen(
       (message) => {
@@ -102,6 +106,21 @@ export default {
       },
       (err) => console.log(err)
     );
+
+    let { data: queueSettings } = await db
+      .collection("messageQueueSettings")
+      .get();
+    this.queueSettings = queueSettings[0];
+
+    db.collection("messageQueueSettings").listen(
+      (message) => {
+        let { item, trigger } = JSON.parse(message.data);
+        if (trigger == "update") {
+          this.queueSettings = item;
+        }
+      },
+      (err) => console.log(err)
+    );
   },
   computed: {
     totalAmount() {
@@ -109,9 +128,15 @@ export default {
     },
   },
   methods: {
-    playPause() {
-      this.pause = !this.pause;
-      if (!this.pause) this.sendNewMessage();
+    sort(e) {
+      let item = this.messageQueue[e.newIndex];
+      db.collection("messageQueue").item(item._id).put({ order: e.newIndex });
+      // console.log(e);
+    },
+    playPause(playing) {
+      db.collection("messageQueueSettings")
+        .item(this.queueSettings._id)
+        .put({ playing });
     },
     sendNewMessage() {
       let addSeconds = () => {
