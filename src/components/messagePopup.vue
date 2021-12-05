@@ -88,6 +88,7 @@ export default {
       this.closePopup();
     },
     async addToQueue() {
+      this.content.order = this.$parent.messageQueue.length - 1;
       await db.collection("messageQueue").post(this.content);
       this.closePopup();
     },
