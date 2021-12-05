@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="total-amount">
-      Total amount of all donations: <span>$100000</span>
+      Total amount of all donations: <span>${{ totalAmount }}</span>
     </div>
     <message-popup v-model="popupMessage" />
     <div class="main-box">
@@ -103,6 +103,11 @@ export default {
       (err) => console.log(err)
     );
   },
+  computed: {
+    totalAmount() {
+      return this.allDonations.reduce((acc, cur) => acc + cur?.amount || 0, 0);
+    },
+  },
   methods: {
     playPause() {
       this.pause = !this.pause;
@@ -171,6 +176,7 @@ export default {
   display: flex;
   align-items: stretch;
   height: 80vh;
+  margin-bottom: 4vh;
 }
 
 .side-wrap {
