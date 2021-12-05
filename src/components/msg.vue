@@ -1,6 +1,8 @@
 <template>
   <div class="incoming-msg" @click="emitClick">
     <p v-if="donation.approved" class="queued">Approved</p>
+    <p v-if="donation.pledge" class="queued pledge">Pledge</p>
+    <br />
     {{ donation.source }}
     <p v-if="donation.amount" class="amount">
       ${{ donation.amount.toLocaleString() }}
@@ -29,8 +31,12 @@ export default {
 .queued {
   color: #2e5bff;
   margin: 0 0 10px 0;
+  display: inline-block;
+  margin-left: 5px;
 }
-
+.pledge {
+  color: #26a94f;
+}
 .amount {
   display: inline-block;
   font-size: 20px;
