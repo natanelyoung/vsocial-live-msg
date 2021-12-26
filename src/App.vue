@@ -6,18 +6,22 @@
 
 <script>
 export default {
-  name: "App"
-}
+  name: "App",
+};
 </script>
 
-<style scoped="">@import "./main.css";
+<style scoped="">
+@import "./main.css";
 
 .funny-title {
   color: purple;
-}</style>
+}
+</style>
 
-<style>@import "./main.css";
+<style>
+@import "./main.css";
 
 .funny-title {
   color: purple;
-}</style>
+}
+</style>
