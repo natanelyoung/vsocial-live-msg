@@ -1,7 +1,8 @@
 <template>
   <div class="home">
     <div class="total-amount">
-      Total amount of all donations: <span>${{ totalAmount }}</span>
+      Total amount of donations:
+      <span>${{ totalAmount.toLocaleString() }}</span>
     </div>
     <message-popup v-model="popupMessage" />
     <div class="main-box">
@@ -18,6 +19,18 @@
       </div>
       <div class="queue-wrap">
         <h2 class="head">Message Queue</h2>
+        <button
+          @click="queueSettings.continuous = !queueSettings.continuous"
+          :style="{
+            'background-color':
+              queueSettings.continuous === true ? '#2e5bff' : '#9699a5',
+          }"
+          class="continuous"
+        >
+          ⥀ Scroll Continuously ({{
+            queueSettings.continuous === true ? "on" : "off"
+          }})
+        </button>
         <button class="playpause" @click="playPause(!queueSettings.playing)">
           {{ queueSettings.playing ? "||" : "▸" }}
         </button>
@@ -173,6 +186,17 @@ export default {
 }
 .total-amount span {
   font-weight: 600;
+}
+
+.continuous {
+  position: absolute;
+  top: 33px;
+  right: 300px;
+  color: white;
+  border-radius: 100px;
+  height: 32px;
+  padding-right: 15px;
+  padding-left: 15px;
 }
 .playpause {
   position: absolute;
