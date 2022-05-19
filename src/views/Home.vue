@@ -124,7 +124,10 @@ export default {
   },
   computed: {
     totalAmount() {
-      return this.allDonations.reduce((acc, cur) => acc + cur?.amount || 0, 0);
+      return this.allDonations.reduce(
+        (acc, cur) => acc + parseFloat(cur?.amount) || 0,
+        0
+      );
     },
   },
   methods: {
