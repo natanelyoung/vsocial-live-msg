@@ -144,7 +144,7 @@ export default {
     },
   },
   methods: {
-    toggleContinuous(){
+    async toggleContinuous(){
       const {queueSettings} = this;
       queueSettings.continuous = !queueSettings.continuous
       await db.collection("messageQueueSettings").put(queueSettings)
