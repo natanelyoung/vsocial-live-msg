@@ -20,7 +20,7 @@
       <div class="queue-wrap">
         <h2 class="head">Message Queue</h2>
         <button
-          @click="queueSettings.continuous = !queueSettings.continuous"
+          @click="toggleContinuous()"
           :style="{
             'background-color':
               queueSettings.continuous === true ? '#2e5bff' : '#9699a5',
@@ -144,6 +144,12 @@ export default {
     },
   },
   methods: {
+    toggleContinuous(){
+      const {queueSettings} = this;
+      queueSettings.continuous = !queueSettings.continuous
+      await db.collection("messageQueueSettings").put(queueSettings)
+    },
+    
     sort(e) {
       let item = this.messageQueue[e.newIndex];
       db.collection("messageQueue").item(item._id).put({ order: e.newIndex });
